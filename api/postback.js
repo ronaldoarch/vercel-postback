@@ -1,12 +1,13 @@
+// pages/api/postback.js
 
 export default async function handler(req, res) {
-  const { event, click_id, value } = req.query;
+  const { evento, id_de_clique, valor } = req.query; // ou req.body se for POST
 
-  console.log('Evento recebido:', event);
-  console.log('Click ID:', click_id);
-  console.log('Valor:', value);
+  console.log('Evento recebido:', evento);
+  console.log('ID do clique:', id_de_clique);
+  console.log('Valor:', valor);
 
-  // Aqui você pode salvar em banco, Google Sheet, etc.
+  // Aqui você pode salvar no banco, planilha do Google, etc.
 
   return res.status(200).send('Postback recebido com sucesso!');
 }
