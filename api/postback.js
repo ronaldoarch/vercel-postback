@@ -11,11 +11,11 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing click_id or event' });
   }
 
-  const pixelId = process.env.PIXEL_ID;
-  const accessToken = process.env.ACCESS_TOKEN;
+  const pixelId = process.env.ID_PIXEL;
+  const accessToken = process.env.TOKEN_DE_ACESSO;
 
   if (!pixelId || !accessToken) {
-    return res.status(500).json({ error: 'Missing Pixel ID or Access Token' });
+    return res.status(500).json({ error: 'Missing Pixel ID or Access Token in environment' });
   }
 
   const eventName = event === 'register' ? 'Lead' : event === 'sale' ? 'Purchase' : 'PageView';
