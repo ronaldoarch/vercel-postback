@@ -1,9 +1,17 @@
 
-import fetch from 'node-fetch';
+import axios from 'axios';
 
-async function sendToFacebook(clickId, eventName, value = null) {
-  const pixelId = '3656416541168561'; // 👉 Troque pelo seu Pixel ID real
-  const accessToken = 'EAAbcxz0GujEBOZCe8IpCMsvEV89Bbke2716rThUQO8c5TNZAoGZAbirZCP6k0e3Wo5FLZCd8mkguINR2MVgb42tkMPZBFREAmeZBAp9ZAG7tFZBv2g1r4v2oCnx8Ro2ZCz7tkZCSBzIkji9vZAw7gV2GWZBefd81UpZBw1mQUysuxMZByjuHnRUaepyWEpHBD1IX8PELYYAvAZDZD'; // 👉 Troque pelo seu token de acesso da CAPI
+export default async function handler(req, res) {
+  const { click_id, event, value } = req.query;
+
+  if (!click_id || !event) {
+    return res.status(400).json({ error: 'Missing click_id or event parameter' });
+  }
+
+  const pixelId = '3656416541168561';
+  const accessToken = 'EAAbcxz0GujEBOZCe8IpCMsvEV89Bbke2716rThUQO8c5TNZAoGZAbirZCP6k0e3Wo5FLZCd8mkguINR2MVgb42tkMPZBFREAmeZBAp9ZAG7tFZBv2g1r4v2oCnx8Ro2ZCz7tkZCSBzIkji9vZAw7gV2GWZBefd81UpZBw1mQUysuxMZByjuHnRUaepyWEpHBD1IX8PELYYAvAZDZD';
+
+  let eventName = event === 'register' ? 'Lead' : event === 'sale' ? 'Purchase' : 'PageView';
 
   const payload = {
     data: [
@@ -11,53 +19,23 @@ async function sendToFacebook(clickId, eventName, value = null) {
         event_name: eventName,
         event_time: Math.floor(Date.now() / 1000),
         action_source: 'website',
-        event_source_url: 'https://seuprojeto.vercel.app/api/postback',
-        custom_data: {
-          value: value ? Number(value) : 0,
-          currency: 'BRL'
-        },
-        user_data: {
-          external_id: clickId
-        }
+        event_source_url: `https://cleverplayer.net/midas?afftid=${click_id}`,
+        user_data: {}
       }
     ]
   };
 
-  const url = `https://graph.facebook.com/v19.0/${pixelId}/events?access_token=${accessToken}`;
+  if (eventName === 'Purchase' && value) {
+    payload.data[0].custom_data = { value: parseFloat(value), currency: 'BRL' };
+  }
 
   try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const result = await response.json();
-    console.log('Facebook CAPI Response:', result);
+    const response = await axios.post(
+      `https://graph.facebook.com/v18.0/${pixelId}/events?access_token=${accessToken}`,
+      payload
+    );
+    res.status(200).json({ success: true, fb_response: response.data });
   } catch (error) {
-    console.error('Erro ao enviar para o Facebook:', error);
+    res.status(500).json({ error: 'Meta CAPI error', details: error.response?.data || error.message });
   }
-}
-
-export default async function handler(req, res) {
-  const { event, click_id, value } = req.query;
-
-  console.log('Evento recebido:', event);
-  console.log('Click ID:', click_id);
-  console.log('Valor:', value);
-
-  if (!click_id || !event) {
-    return res.status(400).send('Faltando parâmetros obrigatórios: click_id e event');
-  }
-
-  // Mapeando os eventos vindos da casa de apostas para eventos do Meta
-  if (event === 'register') {
-    await sendToFacebook(click_id, 'Lead');
-  } else if (event === 'sale') {
-    await sendToFacebook(click_id, 'Purchase', value);
-  } else {
-    console.warn('Evento não reconhecido:', event);
-  }
-
-  res.status(200).send('Postback processado e enviado ao Facebook!');
 }
