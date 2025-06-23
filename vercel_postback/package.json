@@ -1,0 +1,12 @@
+{
+  "name": "vercel_postback",
+  "version": "1.0.0",
+  "main": "api/postback.js",
+  "type": "module",
+  "scripts": {
+    "dev": "node api/postback.js"
+  },
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+} 
