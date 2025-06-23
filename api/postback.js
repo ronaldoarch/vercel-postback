@@ -1,33 +1,37 @@
-
 import axios from 'axios';
 
 export default async function handler(req, res) {
-  const { click_id, event, value } = req.query;
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method Not Allowed' });
+  }
+
+  const { click_id, event, value } = req.body;
 
   if (!click_id || !event) {
-    return res.status(400).json({ error: 'Missing click_id or event parameter' });
+    return res.status(400).json({ error: 'Missing click_id or event' });
   }
 
-  const pixelId = '3656416541168561';
-  const accessToken = 'EAAbcxz0GujEBOZCe8IpCMsvEV89Bbke2716rThUQO8c5TNZAoGZAbirZCP6k0e3Wo5FLZCd8mkguINR2MVgb42tkMPZBFREAmeZBAp9ZAG7tFZBv2g1r4v2oCnx8Ro2ZCz7tkZCSBzIkji9vZAw7gV2GWZBefd81UpZBw1mQUysuxMZByjuHnRUaepyWEpHBD1IX8PELYYAvAZDZD';
+  const pixelId = process.env.PIXEL_ID;
+  const accessToken = process.env.ACCESS_TOKEN;
 
-  let eventName = event === 'register' ? 'Lead' : event === 'sale' ? 'Purchase' : 'PageView';
+  if (!pixelId || !accessToken) {
+    return res.status(500).json({ error: 'Missing Pixel ID or Access Token' });
+  }
+
+  const eventName = event === 'register' ? 'Lead' : event === 'sale' ? 'Purchase' : 'PageView';
 
   const payload = {
-    data: [
-      {
-        event_name: eventName,
-        event_time: Math.floor(Date.now() / 1000),
-        action_source: 'website',
-        event_source_url: `https://cleverplayer.net/midas?afftid=${click_id}`,
-        user_data: {}
-      }
-    ]
+    data: [{
+      event_name: eventName,
+      event_time: Math.floor(Date.now() / 1000),
+      action_source: 'website',
+      event_source_url: `https://cleverplayer.net/midas?afftid=${click_id}`,
+      user_data: {},
+      ...(eventName === 'Purchase' && value
+        ? { custom_data: { value: parseFloat(value), currency: 'BRL' } }
+        : {}),
+    }]
   };
-
-  if (eventName === 'Purchase' && value) {
-    payload.data[0].custom_data = { value: parseFloat(value), currency: 'BRL' };
-  }
 
   try {
     const response = await axios.post(
