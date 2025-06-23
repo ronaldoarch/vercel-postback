@@ -2,8 +2,8 @@
 import fetch from 'node-fetch';
 
 async function sendToFacebook(clickId, eventName, value = null) {
-  const pixelId = 'SEU_PIXEL_ID'; // 👉 Troque pelo seu Pixel ID real
-  const accessToken = 'SEU_ACCESS_TOKEN'; // 👉 Troque pelo seu token de acesso da CAPI
+  const pixelId = '3656416541168561'; // 👉 Troque pelo seu Pixel ID real
+  const accessToken = 'EAAbcxz0GujEBOZCe8IpCMsvEV89Bbke2716rThUQO8c5TNZAoGZAbirZCP6k0e3Wo5FLZCd8mkguINR2MVgb42tkMPZBFREAmeZBAp9ZAG7tFZBv2g1r4v2oCnx8Ro2ZCz7tkZCSBzIkji9vZAw7gV2GWZBefd81UpZBw1mQUysuxMZByjuHnRUaepyWEpHBD1IX8PELYYAvAZDZD'; // 👉 Troque pelo seu token de acesso da CAPI
 
   const payload = {
     data: [
